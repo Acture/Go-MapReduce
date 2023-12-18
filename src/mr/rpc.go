@@ -6,7 +6,10 @@ package mr
 // remember to capitalize all names.
 //
 
-import "os"
+import (
+	"github.com/google/uuid"
+	"os"
+)
 import "strconv"
 
 //
@@ -24,6 +27,29 @@ type ExampleReply struct {
 
 // Add your RPC definitions here.
 
+// FetchTaskArgs 用于表示获取数据的任务。包含描述任务的消息和节点的唯一标识符。
+type FetchTaskArgs struct {
+	Msg    string
+	NodeId uuid.UUID
+}
+
+// FetchTaskReply 用于表示获取任务后收到的响应。
+type FetchTaskReply struct {
+	Msg  string
+	Task *Task
+}
+
+// SubmitTaskArgs 用于提交处理的任务。其中包含关于任务的附加信息，需要处理的 Task，以及处理任务的节点的唯一标识符。
+type SubmitTaskArgs struct {
+	Msg    string
+	Task   *Task
+	NodeId uuid.UUID
+}
+
+// SubmitTaskReply 表示提交任务后的响应消息。
+type SubmitTaskReply struct {
+	Msg string
+}
 
 // Cook up a unique-ish UNIX-domain socket name
 // in /var/tmp, for the coordinator.

@@ -117,6 +117,7 @@ func (c *Coordinator) SubmitTask(args *SubmitTaskArgs, reply *SubmitTaskReply) e
 	log.Printf("Coordinator %v received SubmitTask request from worker %v. Task: %v.\n", c.Id, args.NodeId, args.Task.TaskId)
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
+	reply.Msg = "Task is received."
 	if c.TaskSet.CompleteTask(args.Task) {
 		log.Printf("Coordinator %v completed task %v.\n", c.Id, args.Task.TaskId)
 	} else {
@@ -193,7 +194,8 @@ func (c *Coordinator) TimeOutDetection() {
 		for _, task := range timeOutTask {
 			log.Printf("Task %v is time out.\n", task.TaskId)
 			c.TaskSet.RegisterTask(task)
-			go func() { c.TaskChannel <- task }()
+			lTask := task
+			go func() { c.TaskChannel <- lTask }()
 		}
 		c.Mutex.Unlock()
 		time.Sleep(TimeOutCheckInterval * time.Second)

@@ -205,6 +205,15 @@ func (c *Coordinator) TimeOutDetection() {
 // main/mrcoordinator.go calls this function.
 // nReduce is the number of reduce tasks to use.
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
+
+	logfile, err := os.OpenFile("logfile.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logfile.Close()
+	// 将日志输出重定向到文件
+	log.SetOutput(logfile)
+
 	c := Coordinator{
 		Id:          uuid.New(),
 		Status:      Mapping,

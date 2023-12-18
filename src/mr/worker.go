@@ -69,7 +69,13 @@ const WaitInterval time.Duration = 3
 // Your worker implementation here.
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
-
+	logfile, err := os.OpenFile("logfile.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logfile.Close()
+	// 将日志输出重定向到文件
+	log.SetOutput(logfile)
 	// Your worker implementation here.
 	log.Printf("Worker %v is running\n", Id)
 
@@ -90,11 +96,18 @@ func Worker(mapf func(string, string) []KeyValue,
 		case MapTask:
 			log.Printf("Worker %v received map task %v\n", Id, task.TaskId)
 			ProcessMapTask(mapf, task)
-			SubmitTask(task)
+			if !SubmitTask(task) {
+				return
+			}
 		case ReduceTask:
 			log.Printf("Worker %v received reduce task %v\n", Id, task.TaskId)
 			ProcessReduceTask(reducef, task)
-			SubmitTask(task)
+			if !SubmitTask(task) {
+				return
+			}
+		case ExitTask:
+			log.Printf("Worker %v received exit task %v\n", Id, task.TaskId)
+			return
 		}
 	}
 	// uncomment to send the Example RPC to the coordinator.

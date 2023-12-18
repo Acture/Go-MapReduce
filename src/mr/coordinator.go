@@ -84,7 +84,7 @@ func (c *Coordinator) RegisterTask() {
 	log.Println("All tasks are registered.")
 }
 
-func (c *Coordinator) ReceivedFetchTask(args *FetchTaskArgs, reply *FetchTaskReply) error {
+func (c *Coordinator) FetchTask(args *FetchTaskArgs, reply *FetchTaskReply) error {
 	log.Printf("Coordinator %v received FetchTask request from worker %v.\n", c.Id, args.NodeId)
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
@@ -95,7 +95,9 @@ func (c *Coordinator) ReceivedFetchTask(args *FetchTaskArgs, reply *FetchTaskRep
 		reply.Msg = "Task is assigned."
 	default:
 		log.Printf("Coordinator %v has no task to assign.\n", c.Id)
-		reply.Msg = "No task to assign."
+		if c.CheckStatus() {
+			c.MoveToNextStage()
+		}
 		if c.Status == Exiting {
 			reply.Msg = "Coordinator is exiting. Exit task is assigned."
 			reply.Task = &Task{
@@ -111,7 +113,7 @@ func (c *Coordinator) ReceivedFetchTask(args *FetchTaskArgs, reply *FetchTaskRep
 	return nil
 }
 
-func (c *Coordinator) ReceivedSubmitTask(args *SubmitTaskArgs, reply *SubmitTaskReply) error {
+func (c *Coordinator) SubmitTask(args *SubmitTaskArgs, reply *SubmitTaskReply) error {
 	log.Printf("Coordinator %v received SubmitTask request from worker %v. Task: %v.\n", c.Id, args.NodeId, args.Task.TaskId)
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
@@ -186,6 +188,7 @@ func (c *Coordinator) TimeOutDetection() {
 			timeOutTask = c.TaskSet.IsReduceTaskTimeOut()
 		case Exiting:
 			c.Mutex.Unlock()
+			return
 		}
 		for _, task := range timeOutTask {
 			log.Printf("Task %v is time out.\n", task.TaskId)

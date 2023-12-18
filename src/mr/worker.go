@@ -261,7 +261,8 @@ func (a ByKey) Len() int { return len(a) }
 // and the element previously at index j will be at index i.
 func (a ByKey) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
-// Less is a method of the ByKey type. It compares two elements of ByKey by their Key field and returns true if the Key of the element at index i is less than the Key of the element
+// Less is a method of the ByKey type.
+// It compares two elements of ByKey by their Key field and returns true if the Key of the element at index i is less than the Key of the element
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 // OutputNameTemplate defines the template for generating the output file name in the ProcessReduceTask function.
